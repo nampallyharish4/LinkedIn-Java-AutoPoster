@@ -65,24 +65,41 @@ function getRandomItem(arr) {
 
 function buildPrompt(topic, style) {
   return `You are a senior Java developer and LinkedIn content creator with 15+ years of experience. 
-Generate a compelling, engaging LinkedIn post about: "${topic}"
+Generate a LinkedIn post about: "${topic}"
 
 Post style: ${style.replace('_', ' ')}
 
-RULES:
-1. Start with a powerful hook (first line should grab attention — use bold statements, questions, or surprising facts)
-2. Use short paragraphs (2-3 sentences max each)
-3. Include relevant emojis but don't overdo it (3-5 total)
-4. Add a code snippet ONLY if the style is "code_snippet" — wrap it in plain text formatting since LinkedIn doesn't support markdown code blocks
-5. Include 1-2 actionable takeaways
-6. End with a thought-provoking question to drive engagement
-7. Add 3-5 relevant hashtags at the end (always include #Java and #SoftwareDevelopment)
-8. Keep the total length between 800-1500 characters (LinkedIn optimal range)
-9. Write in a conversational, authentic tone — not corporate/robotic
-10. Do NOT use markdown formatting like ** or ## (LinkedIn doesn't render them) — use CAPS or line breaks for emphasis instead
-11. Do NOT include any greeting like "Hey LinkedIn" or "Hello network"
+YOU MUST FOLLOW THIS EXACT STRUCTURE (each section separated by a blank line):
 
-Return ONLY the post content, nothing else. No explanations, no metadata.`;
+PARAGRAPH 1 — HOOK:
+A compelling opening question that speaks directly to the reader about the topic.
+
+PARAGRAPH 2 — KEY BENEFIT:
+A strong statement about why this topic is a game-changer or important. End with 🚀 emoji.
+Follow with a supporting sentence about what it means for developers.
+
+PARAGRAPH 3 — PERSONAL INSIGHT:
+Start with "As I've learned throughout my career," or similar personal framing.
+Share a practical insight about mastering this topic with 💻 emoji.
+Add a sentence about the real-world impact (efficiency, readability, debugging, etc).
+
+PARAGRAPH 4 — CALL TO ACTION:
+Start with "So what's the first step..." or a similar transition question.
+Give a specific, actionable recommendation with 📚 emoji.
+End with an engagement question asking the reader about their experience.
+
+FINAL LINE — HASHTAGS:
+3-4 hashtags. Always include #Java and #SoftwareDevelopment plus 1-2 topic-specific ones.
+
+STRICT RULES:
+1. Keep total length between 800-1500 characters
+2. Use EXACTLY 3 emojis: 🚀 💻 📚 (placed as shown above)
+3. Do NOT use markdown formatting (no **, ##, or backticks)
+4. Do NOT start with "Hey LinkedIn" or any greeting
+5. Write in a conversational, authentic first-person tone
+6. Use short paragraphs (2-3 sentences max each)
+7. Separate each paragraph with a blank line
+8. Return ONLY the post content — no explanations, no metadata`;
 }
 
 function sleep(ms) {

@@ -12,14 +12,19 @@ async function getProfile() {
   try {
     const response = await axios.get(`${LINKEDIN_API_BASE}/userinfo`, {
       headers: {
-        'Authorization': `Bearer ${config.linkedin.accessToken}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${config.linkedin.accessToken}`,
+        'Content-Type': 'application/json',
+      },
     });
     return response.data;
   } catch (error) {
-    console.error('❌ LinkedIn Profile Error:', error.response?.data || error.message);
-    throw new Error(`Failed to get profile: ${error.response?.data?.message || error.message}`);
+    console.error(
+      '❌ LinkedIn Profile Error:',
+      error.response?.data || error.message,
+    );
+    throw new Error(
+      `Failed to get profile: ${error.response?.data?.message || error.message}`,
+    );
   }
 }
 
@@ -28,13 +33,17 @@ async function getProfile() {
  */
 async function createPost(content) {
   const personUrn = config.linkedin.personUrn;
-  
+
   if (!personUrn) {
-    throw new Error('LinkedIn Person URN is not configured. Please click "Connect LinkedIn Account" on the dashboard.');
+    throw new Error(
+      'LinkedIn Person URN is not configured. Please click "Connect LinkedIn Account" on the dashboard.',
+    );
   }
 
   if (!config.linkedin.accessToken) {
-    throw new Error('LinkedIn Access Token is not configured. Please click "Connect LinkedIn Account" on the dashboard.');
+    throw new Error(
+      'LinkedIn Access Token is not configured. Please click "Connect LinkedIn Account" on the dashboard.',
+    );
   }
 
   try {
@@ -44,14 +53,14 @@ async function createPost(content) {
       specificContent: {
         'com.linkedin.ugc.ShareContent': {
           shareCommentary: {
-            text: content
+            text: content,
           },
-          shareMediaCategory: 'NONE'
-        }
+          shareMediaCategory: 'NONE',
+        },
       },
       visibility: {
-        'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC'
-      }
+        'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+      },
     };
 
     const contentHash = crypto.createHash('md5').update(content).digest('hex');
@@ -61,36 +70,45 @@ async function createPost(content) {
       postBody,
       {
         headers: {
-          'Authorization': `Bearer ${config.linkedin.accessToken}`,
+          Authorization: `Bearer ${config.linkedin.accessToken}`,
           'Content-Type': 'application/json',
           'X-Restli-Protocol-Version': '2.0.0',
-          'X-RestLi-Idempotency-Key': contentHash
+          'X-RestLi-Idempotency-Key': contentHash,
         },
-        timeout: 15000
-      }
+        timeout: 15000,
+      },
     );
 
     return {
       success: true,
       postId: response.headers['x-restli-id'] || response.data?.id,
-      message: 'Post published successfully!'
+      message: 'Post published successfully!',
     };
   } catch (error) {
     const errorData = error.response?.data;
-    console.error('❌ LinkedIn Post Error:', JSON.stringify(errorData, null, 2) || error.message);
-    
+    console.error(
+      '❌ LinkedIn Post Error:',
+      JSON.stringify(errorData, null, 2) || error.message,
+    );
+
     // Handle specific LinkedIn API errors
     if (error.response?.status === 401) {
-      throw new Error('LinkedIn access token expired. Please re-authenticate via /auth/linkedin');
+      throw new Error(
+        'LinkedIn access token expired. Please re-authenticate via /auth/linkedin',
+      );
     }
     if (error.response?.status === 403) {
-      throw new Error('Insufficient permissions. Ensure your LinkedIn app has w_member_social scope.');
+      throw new Error(
+        'Insufficient permissions. Ensure your LinkedIn app has w_member_social scope.',
+      );
     }
     if (error.response?.status === 429) {
       throw new Error('LinkedIn API rate limit reached. Try again later.');
     }
-    
-    throw new Error(`Failed to publish post: ${errorData?.message || error.message}`);
+
+    throw new Error(
+      `Failed to publish post: ${errorData?.message || error.message}`,
+    );
   }
 }
 
@@ -114,17 +132,22 @@ async function exchangeCodeForToken(code, redirectUri) {
         code,
         redirect_uri: redirectUri,
         client_id: config.linkedin.clientId,
-        client_secret: config.linkedin.clientSecret
+        client_secret: config.linkedin.clientSecret,
       }).toString(),
       {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      }
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      },
     );
 
     return response.data;
   } catch (error) {
-    console.error('❌ Token Exchange Error:', error.response?.data || error.message);
-    throw new Error(`Failed to exchange code: ${error.response?.data?.error_description || error.message}`);
+    console.error(
+      '❌ Token Exchange Error:',
+      error.response?.data || error.message,
+    );
+    throw new Error(
+      `Failed to exchange code: ${error.response?.data?.error_description || error.message}`,
+    );
   }
 }
 
@@ -135,9 +158,9 @@ async function getPersonUrn() {
   try {
     const response = await axios.get(`${LINKEDIN_API_BASE}/userinfo`, {
       headers: {
-        'Authorization': `Bearer ${config.linkedin.accessToken}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${config.linkedin.accessToken}`,
+        'Content-Type': 'application/json',
+      },
     });
     return response.data.sub; // This is the person ID
   } catch (error) {
@@ -150,5 +173,5 @@ module.exports = {
   createPost,
   getAuthUrl,
   exchangeCodeForToken,
-  getPersonUrn
+  getPersonUrn,
 };
