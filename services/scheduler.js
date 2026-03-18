@@ -27,7 +27,7 @@ async function executePost() {
 
     // Step 2: Post to LinkedIn
     console.log('📤 Publishing to LinkedIn...');
-    const result = await createPost(generated.content, true, generated.topic);
+    const result = await createPost(generated.content);
     console.log(`✅ Posted successfully! Post ID: ${result.postId}`);
 
     // Step 3: Save to history

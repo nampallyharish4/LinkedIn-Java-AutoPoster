@@ -254,6 +254,24 @@ async function postNow() {
 // SCHEDULER
 // ═══════════════════════════════════════════════
 
+// Convert 12hr to 24hr for API
+function to24hr(hour, minute, ampm) {
+  let h = parseInt(hour);
+  if (ampm === 'AM' && h === 12) h = 0;
+  if (ampm === 'PM' && h !== 12) h += 12;
+  return `${String(h).padStart(2, '0')}:${minute}`;
+}
+
+// Convert 24hr to 12hr for display
+function to12hr(time24) {
+  const [hStr, mStr] = (time24 || '09:00').split(':');
+  let h = parseInt(hStr);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return { hour: h, minute: mStr || '00', ampm, display: `${h}:${mStr || '00'} ${ampm}` };
+}
+
 async function toggleScheduler(start) {
   const endpoint = start ? '/api/scheduler/start' : '/api/scheduler/stop';
 
@@ -261,21 +279,24 @@ async function toggleScheduler(start) {
     const res = await fetch(endpoint, { method: 'POST' });
     const data = await res.json();
     updateSchedulerUI(data);
-    showToast(start ? 'Scheduler started! 🕐' : 'Scheduler stopped.', start ? 'success' : 'info');
+    showToast(start ? 'Scheduler enabled.' : 'Scheduler disabled.', start ? 'success' : 'info');
   } catch (error) {
     showToast(`Scheduler error: ${error.message}`, 'error');
   }
 }
 
 async function updateScheduleTime() {
-  const time = document.getElementById('scheduleTime').value;
-  if (!time) return;
+  const hour = document.getElementById('scheduleHour').value;
+  const minute = document.getElementById('scheduleMinute').value;
+  const ampm = document.getElementById('scheduleAmPm').value;
+  const time24 = to24hr(hour, minute, ampm);
+  const display = to12hr(time24).display;
 
   try {
     const res = await fetch('/api/scheduler/time', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ time })
+      body: JSON.stringify({ time: time24 })
     });
 
     if (!res.ok) {
@@ -283,7 +304,7 @@ async function updateScheduleTime() {
       throw new Error(err.error);
     }
 
-    showToast(`Schedule updated to ${time}`, 'success');
+    showToast(`Schedule updated to ${display}`, 'success');
     loadStats();
   } catch (error) {
     showToast(`Failed to update time: ${error.message}`, 'error');
@@ -301,27 +322,31 @@ function updateSchedulerUI(scheduler) {
   const timeValue = document.getElementById('schedTimeValue');
   const tzValue = document.getElementById('schedTzValue');
 
+  const t = to12hr(scheduler.scheduledTime);
+
   if (scheduler.isActive) {
     dot.className = 'status-dot active';
-    badgeText.textContent = `Active — ${scheduler.scheduledTime}`;
+    badgeText.textContent = `Active \u2014 ${t.display}`;
     btnStart.style.display = 'none';
     btnStop.style.display = 'flex';
     statusValue.textContent = 'Active';
     statusValue.className = 'scheduler-status-value active';
   } else {
     dot.className = 'status-dot inactive';
-    badgeText.textContent = 'Scheduler Off';
+    badgeText.textContent = 'Inactive';
     btnStart.style.display = 'flex';
     btnStop.style.display = 'none';
     statusValue.textContent = 'Inactive';
     statusValue.className = 'scheduler-status-value inactive';
   }
 
-  timeValue.textContent = scheduler.scheduledTime || '09:00';
+  timeValue.textContent = t.display;
   tzValue.textContent = scheduler.timezone || 'Asia/Kolkata';
 
-  // Update time input
-  document.getElementById('scheduleTime').value = scheduler.scheduledTime || '09:00';
+  // Sync the time picker selects
+  document.getElementById('scheduleHour').value = String(t.hour);
+  document.getElementById('scheduleMinute').value = t.minute;
+  document.getElementById('scheduleAmPm').value = t.ampm;
 }
 
 // ═══════════════════════════════════════════════

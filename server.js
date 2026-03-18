@@ -66,7 +66,7 @@ app.post('/api/publish', async (req, res) => {
       return res.status(400).json({ error: 'Content is required' });
     }
 
-    const result = await createPost(content, false, topic);
+    const result = await createPost(content);
     
     const postRecord = {
       id: Date.now().toString(),

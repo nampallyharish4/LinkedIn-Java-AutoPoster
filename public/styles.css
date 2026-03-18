@@ -314,6 +314,41 @@ label {
 }
 .btn-full { width: 100%; }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
+/* SCHEDULER TIME PICKER */
+.scheduler-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.time-select {
+  padding: 8px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  min-width: 52px;
+}
+.time-select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+.ampm-select {
+  min-width: 56px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.time-separator {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0 2px;
+}
 
 /* SCHEDULER STATUS */
 .scheduler-status {
@@ -334,6 +369,14 @@ label {
 }
 .scheduler-status-label { color: var(--text-muted); }
 .scheduler-status-value { color: var(--text-primary); }
+.scheduler-status-value.active { color: var(--success); }
+.scheduler-status-value.inactive { color: var(--text-muted); }
+.scheduler-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
 
 /* HISTORY */
 .post-list {
