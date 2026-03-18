@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Content Engine — Automated Scheduling</title>
+  <meta name="description" content="Automated Java content generation and scheduling platform.">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☕</text></svg>">
+</head>
+<body>
+
+<div class="app-container">
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-brand">
+        <div class="header-icon">⚙️</div>
+        <div class="header-text">
+          <h1>LinkedIn Content Engine</h1>
+          <p>Automated Java content generation and scheduling platform</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="status-badge" id="schedulerBadge">
+          <span class="status-dot inactive" id="schedulerDot"></span>
+          <span id="schedulerBadgeText">Scheduler Off</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ ALERTS ═══════════════ -->
+  <div class="alert alert-success" id="alertSuccess">
+    <span>✓</span>
+    <span id="alertSuccessText"></span>
+    <button class="alert-close" onclick="hideAlert('alertSuccess')">×</button>
+  </div>
+  <div class="alert alert-error" id="alertError">
+    <span>✕</span>
+    <span id="alertErrorText"></span>
+    <button class="alert-close" onclick="hideAlert('alertError')">×</button>
+  </div>
+
+  <!-- ═══════════════ SETUP CHECKLIST ═══════════════ -->
+  <div class="setup-card" id="setupCard">
+    <h2>System Configuration</h2>
+    <div class="setup-checklist">
+      <div class="setup-item" id="setupGroq">
+        <div class="setup-check pending" id="checkGroq">○</div>
+        <div class="setup-item-text">
+          <strong>Integration API Key</strong>
+          <span>Required for content generation service</span>
+        </div>
+      </div>
+      <div class="setup-item" id="setupToken">
+        <div class="setup-check pending" id="checkToken">○</div>
+        <div class="setup-item-text">
+          <strong>LinkedIn Access Token</strong>
+          <span>Required for posting to LinkedIn</span>
+        </div>
+      </div>
+      <div class="setup-item" id="setupUrn">
+        <div class="setup-check pending" id="checkUrn">○</div>
+        <div class="setup-item-text">
+          <strong>LinkedIn Person URN</strong>
+          <span>Your LinkedIn profile identifier</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ STATS GRID ═══════════════ -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Posts</div>
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-detail" id="statTotalDetail">All time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">This Week</div>
+      <div class="stat-value" id="statWeek">0</div>
+      <div class="stat-detail">Last 7 days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">This Month</div>
+      <div class="stat-value" id="statMonth">0</div>
+      <div class="stat-detail" id="statMonthDetail">Current month</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Success Rate</div>
+      <div class="stat-value" id="statRate">—</div>
+      <div class="stat-detail">Published / Attempted</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <div class="content-grid">
+    <!-- LEFT: POST COMPOSER -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Content Composer</h2>
+        <div class="char-count" id="charCount">0 characters</div>
+      </div>
+      <div class="card-body">
+        <!-- Topic Selection -->
+        <div class="composer-topics">
+          <label>Java Topic</label>
+          <select class="topic-select" id="topicSelect">
+            <option value="">Random Topic (Auto-select)</option>
+          </select>
+        </div>
+
+        <!-- Generate Actions -->
+        <div class="composer-actions">
+          <button class="btn btn-java" id="btnGenerate" onclick="generatePreview()">
+            Generate Draft
+          </button>
+          <button class="btn btn-outline" id="btnRegenerate" onclick="generatePreview()" disabled>
+            Re-Draft
+          </button>
+        </div>
+
+        <!-- Preview Area -->
+        <div class="post-preview empty" id="postPreview" contenteditable="false">
+          Click "Generate Draft" to initiate content composition...
+        </div>
+
+        <div class="publish-actions">
+          <button class="btn btn-linkedin btn-full" id="btnPublish" onclick="publishPost()" disabled>
+            Post to LinkedIn
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <!-- SCHEDULER CARD -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Automated Scheduler</h2>
+        </div>
+        <div class="card-body">
+          <div class="scheduler-time">
+            <input type="time" class="time-input" id="scheduleTime" value="09:00">
+            <button class="btn btn-outline btn-sm" onclick="updateScheduleTime()">Set</button>
+          </div>
+
+          <div class="scheduler-controls">
+            <button class="btn btn-success btn-full" id="btnStartScheduler" onclick="toggleScheduler(true)">
+              Enable Automation
+            </button>
+            <button class="btn btn-danger btn-full" id="btnStopScheduler" onclick="toggleScheduler(false)" style="display:none;">
+              Disable Automation
+            </button>
+          </div>
+
+          <div class="scheduler-status">
+            <div class="scheduler-status-row">
+              <span class="scheduler-status-label">Status</span>
+              <span class="scheduler-status-value" id="schedStatusValue">Inactive</span>
+            </div>
+            <div class="scheduler-status-row">
+              <span class="scheduler-status-label">Daily Time</span>
+              <span class="scheduler-status-value" id="schedTimeValue">09:00</span>
+            </div>
+            <div class="scheduler-status-row">
+              <span class="scheduler-status-label">Timezone</span>
+              <span class="scheduler-status-value" id="schedTzValue">Asia/Kolkata</span>
+            </div>
+            <div class="scheduler-status-row">
+              <span class="scheduler-status-label">Today's Post</span>
+              <span class="scheduler-status-value" id="schedTodayValue">Not yet</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK POST CARD -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Execution Control</h2>
+        </div>
+        <div class="card-body">
+          <button class="btn btn-primary btn-full" onclick="postNow()" id="btnPostNow" style="margin-bottom: 10px;">
+            Execute Immediate Post
+          </button>
+          <button class="btn btn-outline btn-full" onclick="window.location.href='/auth/linkedin'">
+            Link Profile Authentication
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ POST HISTORY ═══════════════ -->
+  <div class="card history-section">
+    <div class="card-header">
+      <h2>Telemetry & History</h2>
+      <span class="page-info" id="historyInfo">Loading...</span>
+    </div>
+    <div class="card-body">
+      <div class="post-list" id="postList">
+        <!-- Posts will be loaded here -->
+      </div>
+      <div class="pagination" id="pagination" style="display:none;">
+        <button class="btn btn-outline btn-sm" id="btnPrevPage" onclick="changePage(-1)">← Previous</button>
+        <span class="page-info" id="pageInfo">Page 1</span>
+        <button class="btn btn-outline btn-sm" id="btnNextPage" onclick="changePage(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="footer">
+    <p>LinkedIn Content Engine v1.0 — Enterprise Architecture</p>
+  </footer>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- POST DETAIL MODAL -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Post Details</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-content-preview" id="modalContent"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      <button class="btn btn-outline" onclick="copyModalContent()">Copy</button>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
