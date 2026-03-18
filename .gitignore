@@ -130,3 +130,6 @@ dist
 # Local data (Custom to this project)
 data/
 posts.json
+
+# Netlify
+.netlify/

@@ -1,7 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
+// In serverless environments (Netlify), the project dir is read-only.
+// Use /tmp as a fallback for writable storage.
+const isServerless = !!process.env.NETLIFY || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+const DATA_DIR = isServerless ? '/tmp/data' : path.join(__dirname, '..', 'data');
 const POSTS_FILE = path.join(DATA_DIR, 'posts.json');
 
 /**
